@@ -18,12 +18,15 @@ optparser.add_option('-s', '--filesize', dest='filesize', default='100G',
                      help='Set SIZE as file size for test', metavar='SIZE')
 optparser.add_option('-m', '--max-concurrency', dest='maxdepth', default=128, type='int',
                      help='Test maximum concurrency level N', metavar='N')
+optparser.add_option('-o', '--output', dest='output_filename', default='disk-concurrency-response.svg',
+                     help='Write output graph to FILE', metavar='FILE')
 
 (options, args) = optparser.parse_args()
 
 mountpoint = options.mountpoint
 filesize = options.filesize
 maxdepth = options.maxdepth
+output_filename = options.output_filename
 
 header = '''\
 [global]
@@ -111,4 +114,4 @@ ax2.set_ylabel('average latency (μs)', color='r')
 for tl in ax2.get_yticklabels():
     tl.set_color('r')
     
-plt.savefig(filename='disk-concurrency-response.svg')
+plt.savefig(filename=output_filename)
