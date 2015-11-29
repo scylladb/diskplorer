@@ -100,7 +100,7 @@ def fix_y_axis(plt):
     plt.ylim(0.0, plt.ylim()[1])
 
 fig, ax1 = plt.subplots()
-ax1.plot(concurrencies, iopses, 'b-')
+ax1.plot(concurrencies, iopses, 'b-+')
 ax1.set_xlabel('concurrency')
 # Make the y-axis label and tick labels match the line color.
 ax1.set_ylabel('4k read iops', color='b')
@@ -109,7 +109,7 @@ for tl in ax1.get_yticklabels():
 # FIXME: want log scale on X axis
     
 ax2 = ax1.twinx()
-ax2.plot(concurrencies, latencies, 'r-')
+ax2.plot(concurrencies, latencies, 'r-+')
 ax2.set_ylabel('average latency (μs)', color='r')
 for tl in ax2.get_yticklabels():
     tl.set_color('r')
