@@ -37,3 +37,9 @@ The test file is not deleted after a run.
     -o FILE, --output=FILE
                           Write output graph to FILE
 
+## Example results
+
+Here are results on a fairly good NVMe SSD.  At its peak, the drive is delivering 1.8GB/sec.
+
+![alt text](example-results/monster.svg "Example results")
+
