@@ -14,6 +14,8 @@ optparser = optparse.OptionParser()
 
 optparser.add_option('-d', '--mountpoint', dest='mountpoint', default='.',
                      help='Test disk mounted at MOUNTPOINT', metavar='MOUNTPOINT')
+optparser.add_option('-b', '--device', dest='device', default=None,
+                     help='Test block device DEV (overrides --mountpoint)', metavar='DEV')
 optparser.add_option('-s', '--filesize', dest='filesize', default='100G',
                      help='Set SIZE as file size for test', metavar='SIZE')
 optparser.add_option('-m', '--max-concurrency', dest='maxdepth', default=128, type='int',
@@ -27,6 +29,12 @@ mountpoint = options.mountpoint
 filesize = options.filesize
 maxdepth = options.maxdepth
 output_filename = options.output_filename
+input_filename = 'fiotest.tmp'
+readonly = []
+if options.device:
+    input_filename = options.device
+    readonly = ['--readonly']
+    mountpoint = '/'
 
 header = '''\
 [global]
@@ -37,7 +45,7 @@ bs=4k
 size={filesize}
 directory={mountpoint}
 runtime=10s
-filename=fiotest.tmp
+filename={input_filename}
 group_reporting=1
 
 '''
@@ -75,7 +83,7 @@ def create_fio_spec(fname):
 def run_job():
     spec_fname = 'tmp.fio'
     create_fio_spec(spec_fname)
-    result_json = subprocess.check_output(['fio', '--output-format=json', spec_fname])
+    result_json = subprocess.check_output(['fio', '--output-format=json'] + readonly + [spec_fname])
     result_json = result_json.decode('utf-8')
     open('tmp.fio.json', 'w').write(result_json)
     return json.loads(result_json)
