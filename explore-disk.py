@@ -92,15 +92,21 @@ results = run_job()
 
 concurrencies = [0]  # FIXME: fake 0 element to force axis limit
 latencies = [0.]
+latencies_05 = [0.]
+latencies_95 = [0.]
 iopses = [0.]
 
 for job in results['jobs']:
     concurrency = int(job['jobname'])
     latency = float(job['read']['clat']['mean'])
+    latency_05 = float(job['read']['clat']['percentile']['5.000000'])
+    latency_95 = float(job['read']['clat']['percentile']['95.000000'])
     latency_stddev = float(job['read']['clat']['stddev'])
     iops = float(job['read']['iops'])
     concurrencies.append(concurrency)
     latencies.append(latency)
+    latencies_05.append(latency_05)
+    latencies_95.append(latency_95)
     iopses.append(iops)
 
 def fix_y_axis(plt):
@@ -116,8 +122,9 @@ for tl in ax1.get_yticklabels():
 # FIXME: want log scale on X axis
     
 ax2 = ax1.twinx()
-ax2.plot(concurrencies, latencies, 'r-+')
-ax2.set_ylabel('average latency (μs)', color='r')
+#ax2.plot(concurrencies, latencies, 'r-+')
+ax2.errorbar(concurrencies, latencies, yerr=[latencies_05, latencies_95], color='r')
+ax2.set_ylabel(u'average latency (μs)', color='r')
 for tl in ax2.get_yticklabels():
     tl.set_color('r')
     
