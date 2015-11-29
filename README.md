@@ -41,5 +41,5 @@ The test file is not deleted after a run.
 
 Here are results on a fairly good NVMe SSD.  At its peak, the drive is delivering 1.8GB/sec.
 
-![Example results](example-results/monster.svg)
+![Example results](example-results/monster.png)
 
