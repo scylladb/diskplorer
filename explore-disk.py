@@ -55,7 +55,7 @@ def create_fio_spec(fname):
     with open(fname, 'w') as f:
         f.write(header.format(**globals()))
         last = 0
-        growth = 1.1
+        growth = 1.05
         for depth in range(1, maxdepth):
             if depth < last * growth:
                 continue
