@@ -4,6 +4,7 @@ import os
 import json
 import subprocess
 import matplotlib
+import math
 import optparse
 
 matplotlib.use('svg')  # must come before pyplot import
@@ -62,11 +63,9 @@ max_threads = os.cpu_count()
 def create_fio_spec(fname):
     with open(fname, 'w') as f:
         f.write(header.format(**globals()))
-        last = 0
+        depth = 1
         growth = 1.05
-        for depth in range(1, maxdepth):
-            if depth < last * growth:
-                continue
+        while depth <= maxdepth:
             depth_remain = depth
             threads_remain = max_threads
             new_group = 'stonewall'
@@ -78,7 +77,7 @@ def create_fio_spec(fname):
                     new_group = ''
                     depth_remain -= depth_now
                 threads_remain -= 1
-            last = depth
+            depth = int(max(math.ceil(depth * growth), depth + 1))
 
 def run_job():
     spec_fname = 'tmp.fio'
