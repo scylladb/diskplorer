@@ -19,6 +19,8 @@ optparser.add_option('-b', '--device', dest='device', default=None,
                      help='Test block device DEV (overrides --mountpoint)', metavar='DEV')
 optparser.add_option('-s', '--filesize', dest='filesize', default='100G',
                      help='Set SIZE as file size for test', metavar='SIZE')
+optparser.add_option('--buffer-size', dest='buffer_size', default='4k',
+                     help='Set SIZE as I/O buffer size for test (ex. 4k, 1M)', metavar='SIZE')
 optparser.add_option('-m', '--max-concurrency', dest='maxdepth', default=128, type='int',
                      help='Test maximum concurrency level N', metavar='N')
 optparser.add_option('-o', '--output', dest='output_filename', default='disk-concurrency-response.svg',
@@ -29,6 +31,7 @@ optparser.add_option('-o', '--output', dest='output_filename', default='disk-con
 mountpoint = options.mountpoint
 filesize = options.filesize
 maxdepth = options.maxdepth
+buffer_size = options.buffer_size
 output_filename = options.output_filename
 input_filename = 'fiotest.tmp'
 readonly = []
@@ -42,7 +45,7 @@ header = '''\
 ioengine=libaio
 buffered=0
 rw=randread
-bs=4k
+bs={buffer_size}
 size={filesize}
 directory={mountpoint}
 runtime=10s
@@ -116,7 +119,7 @@ fig, ax1 = plt.subplots()
 ax1.plot(concurrencies, iopses, 'b-+')
 ax1.set_xlabel('concurrency')
 # Make the y-axis label and tick labels match the line color.
-ax1.set_ylabel('4k read iops', color='b')
+ax1.set_ylabel('{buffer_size} read iops'.format(**globals()), color='b')
 for tl in ax1.get_yticklabels():
     tl.set_color('b')
 # FIXME: want log scale on X axis
