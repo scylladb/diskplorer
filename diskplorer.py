@@ -1,4 +1,6 @@
-#!/usr/bin/python3
+#!/usr/bin/python
+
+from __future__ import print_function
 
 import os
 import json
@@ -6,6 +8,7 @@ import subprocess
 import matplotlib
 import math
 import optparse
+import multiprocessing
 
 matplotlib.use('svg')  # must come before pyplot import
 
@@ -65,7 +68,7 @@ iodepth={depth}
 
 '''
 
-max_threads = os.cpu_count()
+max_threads = multiprocessing.cpu_count()
 
 def create_fio_spec(fname):
     with open(fname, 'w') as f:
@@ -131,7 +134,7 @@ for tl in ax1.get_yticklabels():
 ax2 = ax1.twinx()
 #ax2.plot(concurrencies, latencies, 'r-+')
 ax2.errorbar(concurrencies, latencies, yerr=[latencies_05, latencies_95], color='r')
-ax2.set_ylabel(u'average latency (μs)', color='r')
+ax2.set_ylabel(u'average latency (us)', color='r')
 for tl in ax2.get_yticklabels():
     tl.set_color('r')
     
