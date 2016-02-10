@@ -25,6 +25,9 @@ optparser.add_option('-m', '--max-concurrency', dest='maxdepth', default=128, ty
                      help='Test maximum concurrency level N', metavar='N')
 optparser.add_option('-o', '--output', dest='output_filename', default='disk-concurrency-response.svg',
                      help='Write output graph to FILE', metavar='FILE')
+optparser.add_option('--raw-results', dest='raw_results_filename',
+                     metavar='FILE', default='disk-concurrency-response.csv',
+                     help='Write raw results (.csv) to FILE')
 
 (options, args) = optparser.parse_args()
 
@@ -33,6 +36,7 @@ filesize = options.filesize
 maxdepth = options.maxdepth
 buffer_size = options.buffer_size
 output_filename = options.output_filename
+raw_filename = options.raw_results_filename
 input_filename = 'fiotest.tmp'
 readonly = []
 if options.device:
@@ -132,3 +136,10 @@ for tl in ax2.get_yticklabels():
     tl.set_color('r')
     
 plt.savefig(filename=output_filename)
+
+with open(raw_filename, 'w') as raw:
+    print('buffersize,concurrency,iops,lat_avg,lat_05,lat_95', file=raw)
+    for concurrency, iops, lat_avg, lat_05, lat_95 in zip(
+            concurrencies, iopses, latencies, latencies_05, latencies_95):
+        print('{buffer_size},{concurrency},{iops},{lat_avg},{lat_05},{lat_95}'
+              .format(**locals()), file=raw)
