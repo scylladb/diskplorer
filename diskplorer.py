@@ -31,6 +31,9 @@ optparser.add_option('-o', '--output', dest='output_filename', default='disk-con
 optparser.add_option('--raw-results', dest='raw_results_filename',
                      metavar='FILE', default='disk-concurrency-response.csv',
                      help='Write raw results (.csv) to FILE')
+optparser.add_option('--process-results', dest='input_json_results',
+                     metavar='FILE', default=None,
+                     help='Skip testing; process test results (.json) from FILE')
 
 (options, args) = optparser.parse_args()
 
@@ -40,6 +43,7 @@ maxdepth = options.maxdepth
 buffer_size = options.buffer_size
 output_filename = options.output_filename
 raw_filename = options.raw_results_filename
+input_json_results = options.input_json_results
 input_filename = 'fiotest.tmp'
 readonly = []
 if options.device:
@@ -98,7 +102,11 @@ def run_job():
     return json.loads(result_json)
 
 
-results = run_job()
+if input_json_results:
+    result_json = open(input_json_results, 'r').read()
+    results = json.loads(result_json)
+else:
+    results = run_job()
 
 concurrencies = [0]  # FIXME: fake 0 element to force axis limit
 latencies = [0.]
