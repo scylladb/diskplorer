@@ -114,12 +114,22 @@ latencies_05 = [0.]
 latencies_95 = [0.]
 iopses = [0.]
 
+# fio up to 2.21 used 'clat', changing to 'clat_ns' on commit d6bb626ef37d3905221ade2887b422717a07af09.
+# Split the 'fio version' field using dashes, pick the second one and split that
+# using dots, taking the first two elements and parsing it into a float.
+fio_version = results['fio version'].split('-', 2)[1].split('.', 2)
+if int(fio_version[0]) <= 2 and int(fio_version[1]) <= 21:
+    field = 'clat'
+else:
+    field = 'clat_ns'
+
 for job in results['jobs']:
     concurrency = int(job['jobname'])
-    latency = float(job['read']['clat']['mean'])
-    latency_05 = float(job['read']['clat']['percentile']['5.000000'])
-    latency_95 = float(job['read']['clat']['percentile']['95.000000'])
-    latency_stddev = float(job['read']['clat']['stddev'])
+
+    latency = float(job['read'][field]['mean'])
+    latency_05 = float(job['read'][field]['percentile']['5.000000'])
+    latency_95 = float(job['read'][field]['percentile']['95.000000'])
+    latency_stddev = float(job['read'][field]['stddev'])
     iops = float(job['read']['iops'])
     concurrencies.append(concurrency)
     latencies.append(latency)
