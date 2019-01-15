@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Copyright 2019 ScyllaDB
+# SPDX-License-Identifier: Apache-2.0
+
 from __future__ import print_function
 
 import os
