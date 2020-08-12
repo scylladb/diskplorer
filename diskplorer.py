@@ -159,7 +159,7 @@ ax2.set_ylabel(u'average latency (us)', color='r')
 for tl in ax2.get_yticklabels():
     tl.set_color('r')
     
-plt.savefig(filename=output_filename)
+plt.savefig(fname=output_filename)
 
 with open(raw_filename, 'w') as raw:
     print('buffersize,concurrency,iops,lat_avg,lat_05,lat_95', file=raw)
