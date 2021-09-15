@@ -61,7 +61,9 @@ def generate_job_file(file):
             if read_fraction > 0:
                 out(textwrap.dedent(f'''\
                     [read(w={int(write_fraction*100)},r={int(read_fraction*100)})]
-                    {group_introducer}
+                    '''))
+                out(group_introducer)
+                out(textwrap.dedent(f'''\
                     readwrite=randread
                     blocksize={args.read_buffer_size}
                     iodepth={args.read_concurrency}
@@ -73,7 +75,9 @@ def generate_job_file(file):
             if write_fraction > 0:
                 out(textwrap.dedent(f'''\
                     [write(w={int(write_fraction*100)},r={int(read_fraction*100)})]
-                    {write_group_introducer}
+                    '''))
+                out(write_group_introducer)
+                out(textwrap.dedent(f'''\
                     readwrite=write
                     blocksize={args.write_buffer_size}
                     iodepth={args.write_concurrency}
