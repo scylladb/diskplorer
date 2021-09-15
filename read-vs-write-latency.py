@@ -39,12 +39,14 @@ def generate_job_file(file):
         group_reporting
         ioengine=io_uring
         size={args.size_limit}
+        random_generator=tausworthe64
         
         [prepare]
         readwrite=write
         time_based=0
-        blocksize=32MB
-        iodepth=1
+        blocksize=2MB
+        iodepth=4
+        runtime=0
 
         '''))
     group_introducer=textwrap.dedent('''\
