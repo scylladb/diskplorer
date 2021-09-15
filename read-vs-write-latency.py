@@ -38,7 +38,7 @@ def generate_job_file(file):
         direct=1
         group_reporting
         ioengine=io_uring
-        size={args.size}
+        size={args.size_limit}
         
         [prepare]
         readwrite=write
