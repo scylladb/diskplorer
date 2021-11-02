@@ -60,7 +60,9 @@ def generate_job_file(file):
         for read_iops_step in range(args.read_test_steps):
             read_fraction = read_iops_step / (args.read_test_steps - 1)
             read_iops = int(math.ceil(read_fraction * args.max_read_iops))
-            if read_fraction > 0:
+            if read_iops == 0 and write_bw == 0:
+                read_iops = 1   # make sure to emit (0, 0) point for easier post-processing
+            if read_iops > 0:
                 out(textwrap.dedent(f'''\
                     [read(w={int(write_fraction*100)},r={int(read_fraction*100)})]
                     '''))
@@ -74,7 +76,7 @@ def generate_job_file(file):
                 write_group_introducer = ''
             else:
                 write_group_introducer = group_introducer
-            if write_fraction > 0:
+            if write_bw > 0:
                 out(textwrap.dedent(f'''\
                     [write(w={int(write_fraction*100)},r={int(read_fraction*100)})]
                     '''))
