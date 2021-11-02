@@ -25,6 +25,12 @@ parser.add_argument('device',
 
 args = parser.parse_args()
 
+def generate_job_names(group_name):
+    idx = 0
+    while True:
+        yield group_name + (f'.{idx}' if idx > 0 else '')
+        idx += 1
+
 def generate_job_file(file):
     def out(*args, **kwargs):
         print(*args, **kwargs, file=file)
@@ -60,11 +66,12 @@ def generate_job_file(file):
         for read_iops_step in range(args.read_test_steps):
             read_fraction = read_iops_step / (args.read_test_steps - 1)
             read_iops = int(math.ceil(read_fraction * args.max_read_iops))
+            job_names = generate_job_names(f'job(w={int(write_fraction*100)},r={int(read_fraction*100)})')
             if read_iops == 0 and write_bw == 0:
                 read_iops = 1   # make sure to emit (0, 0) point for easier post-processing
             if read_iops > 0:
                 out(textwrap.dedent(f'''\
-                    [read(w={int(write_fraction*100)},r={int(read_fraction*100)})]
+                    [{next(job_names)}]
                     '''))
                 out(group_introducer)
                 out(textwrap.dedent(f'''\
@@ -78,7 +85,7 @@ def generate_job_file(file):
                 write_group_introducer = group_introducer
             if write_bw > 0:
                 out(textwrap.dedent(f'''\
-                    [write(w={int(write_fraction*100)},r={int(read_fraction*100)})]
+                    [{next(job_names)}]
                     '''))
                 out(write_group_introducer)
                 out(textwrap.dedent(f'''\
