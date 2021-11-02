@@ -66,7 +66,7 @@ def generate_job_file(file):
         for read_iops_step in range(args.read_test_steps + 1):
             read_fraction = read_iops_step / args.read_test_steps
             read_iops = int(math.ceil(read_fraction * args.max_read_iops))
-            job_names = generate_job_names(f'job(w={int(write_fraction*100)},r={int(read_fraction*100)})')
+            job_names = generate_job_names(f'job(r_idx={read_iops_step},w_idx={write_bw_step},write_bw={write_bw},r_iops={read_iops})')
             if read_iops == 0 and write_bw == 0:
                 read_iops = 1   # make sure to emit (0, 0) point for easier post-processing
             if read_iops > 0:
