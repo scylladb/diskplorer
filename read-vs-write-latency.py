@@ -10,9 +10,9 @@ parser.add_argument('--max-write-bandwidth', type=float, required=True,
                     help='Maximum write bandwidth to test (in B/s)')
 parser.add_argument('--max-read-iops', type=float, required=True,
                     help='Maximum read IOPS to test (in ops/s)')
-parser.add_argument('--write-test-steps', type=int, default=21,
+parser.add_argument('--write-test-steps', type=int, default=20,
                     help='Number of subdivisions from 0 to max-write-bandwidth to test')
-parser.add_argument('--read-test-steps', type=int, default=21,
+parser.add_argument('--read-test-steps', type=int, default=20,
                     help='Number of subdivisions from 0 to max-read-iops to test')
 parser.add_argument('--read-concurrency', type=int, default=1000)
 parser.add_argument('--read-buffer-size', type=int, default=512)
@@ -60,11 +60,11 @@ def generate_job_file(file):
         new_group
         ''')
 
-    for write_bw_step in range(args.write_test_steps):
-        write_fraction = write_bw_step / (args.write_test_steps - 1)
+    for write_bw_step in range(args.write_test_steps + 1):
+        write_fraction = write_bw_step / args.write_test_steps
         write_bw = int(write_fraction * args.max_write_bandwidth)
-        for read_iops_step in range(args.read_test_steps):
-            read_fraction = read_iops_step / (args.read_test_steps - 1)
+        for read_iops_step in range(args.read_test_steps + 1):
+            read_fraction = read_iops_step / args.read_test_steps
             read_iops = int(math.ceil(read_fraction * args.max_read_iops))
             job_names = generate_job_names(f'job(w={int(write_fraction*100)},r={int(read_fraction*100)})')
             if read_iops == 0 and write_bw == 0:
