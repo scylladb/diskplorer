@@ -60,7 +60,7 @@ for name_mat, ax in zip(mats, axs):
     ax.set_title(f'{name} latency')
     ax.set_xlabel('w_bw')
     ax.set_ylabel('r_iops')
-    c = ax.pcolor(w_bw, r_iops, mat/2, shading='auto')
+    c = ax.pcolor(w_bw, r_iops, mat, shading='auto', cmap='cool')
     fig.colorbar(c, ax=ax)
 
 
