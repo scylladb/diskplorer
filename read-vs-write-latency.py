@@ -4,6 +4,7 @@ import sys
 import argparse
 import math
 import textwrap
+import multiprocessing
 
 parser = argparse.ArgumentParser(description='Measure disk read latency vs. write bandwidth')
 parser.add_argument('--max-write-bandwidth', type=float, required=True,
@@ -20,6 +21,8 @@ parser.add_argument('--write-concurrency', type=int, default=4)
 parser.add_argument('--write-buffer-size', type=int, default=128*1024)
 parser.add_argument('--size-limit', type=str, default="0",
                     help='Limit I/O range on device (required for files)')
+parser.add_argument('--cpus', type=int, default=multiprocessing.cpu_count(),
+                    help='Number of processors to use (default=all)')
 parser.add_argument('device',
                     help='device to test (e.g. /dev/nmve0n1). Caution: destructive')
 
@@ -69,30 +72,36 @@ def generate_job_file(file):
             job_names = generate_job_names(f'job(r_idx={read_iops_step},w_idx={write_bw_step},write_bw={write_bw},r_iops={read_iops})')
             if read_iops == 0 and write_bw == 0:
                 read_iops = 1   # make sure to emit (0, 0) point for easier post-processing
-            if read_iops > 0:
+            nr_cpus = args.cpus
+            if write_bw > 0:
                 out(textwrap.dedent(f'''\
                     [{next(job_names)}]
                     '''))
                 out(group_introducer)
                 out(textwrap.dedent(f'''\
-                    readwrite=randread
-                    blocksize={args.read_buffer_size}
-                    iodepth={args.read_concurrency}
-                    rate_iops={read_iops}
-                    '''))
-                write_group_introducer = ''
-            else:
-                write_group_introducer = group_introducer
-            if write_bw > 0:
-                out(textwrap.dedent(f'''\
-                    [{next(job_names)}]
-                    '''))
-                out(write_group_introducer)
-                out(textwrap.dedent(f'''\
                     readwrite=write
                     blocksize={args.write_buffer_size}
                     iodepth={args.write_concurrency}
                     rate={write_bw}
+                    '''))
+                nr_cpus -= 1
+                read_group_introducer = ''
+            else:
+                read_group_introducer = group_introducer
+            while read_iops > 0:
+                this_cpu_read_iops = int(math.ceil(read_iops / nr_cpus))
+                read_iops -= this_cpu_read_iops
+                nr_cpus -= 1
+                out(textwrap.dedent(f'''\
+                    [{next(job_names)}]
+                    '''))
+                out(read_group_introducer)
+                read_group_introducer = ''
+                out(textwrap.dedent(f'''\
+                    readwrite=randread
+                    blocksize={args.read_buffer_size}
+                    iodepth={args.read_concurrency}
+                    rate_iops={this_cpu_read_iops}
                     '''))
 
 generate_job_file(file=sys.stdout)
