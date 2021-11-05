@@ -5,6 +5,7 @@ import numpy as np
 import re
 import collections
 import argparse
+import matplotlib
 import matplotlib.pyplot as plt
 import itertools
 
@@ -60,7 +61,8 @@ for name_mat, ax in zip(mats, axs):
     ax.set_title(f'{name} latency')
     ax.set_xlabel('w_bw')
     ax.set_ylabel('r_iops')
-    c = ax.pcolor(w_bw, r_iops, mat, shading='auto', cmap='cool')
+    c = ax.pcolor(w_bw, r_iops, mat, shading='auto', cmap='cool',
+                  norm=matplotlib.colors.Normalize(vmin=0, vmax=5, clip=True))
     fig.colorbar(c, ax=ax)
 
 
