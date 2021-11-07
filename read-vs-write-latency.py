@@ -49,6 +49,7 @@ def generate_job_file(file):
         ioengine=io_uring
         size={args.size_limit}
         random_generator=tausworthe64
+        thread
         
         [prepare]
         readwrite=write
