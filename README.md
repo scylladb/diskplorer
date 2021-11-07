@@ -38,6 +38,17 @@ Once done, copy the result file (`test.json`) to your workstation and view the c
 
     ./latency-postprocess.py test.json
 
+
+# Sample results
+
+## i3en.3xlarge
+
+![i3en.3xlarge chart](latency-matrix-results/i3en.3xlarge.png)
+
+## i3.2xlarge
+
+![i3.2xlarge chart](latency-matrix-results/i3.2xlarge.png)
+
 # Obsolete diskplorer variant
 
 *Diskplorer* is a small wrapper around <code>[fio](https://github.com/axboe/fio)</code>
