@@ -10,15 +10,16 @@ import matplotlib.pyplot as plt
 import itertools
 
 parser = argparse.ArgumentParser(description='Post-process latency matrix results')
-parser.add_argument('files', nargs='+',
-                    help='JSON result files from fio')
-
+parser.add_argument('file',
+                    help='JSON result file from fio')
+parser.add_argument('--output',
+                    help='Output file (.svg/.png) (default=interactive)')
 
 args = parser.parse_args()
 
 cell = collections.namedtuple('cell', ['r_iops', 'w_bw', 'r_clat'])
 
-for result_file in args.files:
+for result_file in [args.file]:
     jobs = json.load(open(result_file))['jobs']
 
     results_dict = {}
@@ -66,6 +67,8 @@ for name_mat, ax in zip(mats, axs):
     fig.colorbar(c, ax=ax)
 
 
-fig.show()
-
-plt.pause(100)
+if args.output:
+    fig.savefig(args.output, dpi=600)
+else:
+    fig.show()
+    plt.pause(100)
