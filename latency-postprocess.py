@@ -55,6 +55,12 @@ mats = [
     ('p95', p95),
 ]
 
+matplotlib.rcParams.update({
+    'font.size': 9,
+    'figure.figsize': (12, 8),
+})
+
+
 fig, axs = plt.subplots(2)
 
 for name_mat, ax in zip(mats, axs):
