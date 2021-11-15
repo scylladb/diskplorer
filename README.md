@@ -49,6 +49,10 @@ Once done, copy the result file (`test.json`) to your workstation and view the c
 
 ![i3.2xlarge chart](latency-matrix-results/i3.2xlarge.png)
 
+## AWS EC2 r5b.2xlarge, EBS GP3 (1000 GB, 1000 MB/s, 16000 IOPS)
+
+![EBS GP3 1000 MB/s, 16000 IOPS](latency-matrix-results/r2b.2xlarge-ebs-gp3-1000g-w1000-r16000.png)
+
 ## GCP n2-standard-16, 8 local SSDs in RAID 0
 
 These results are using aio instead of io_uring due to [bad interaction between md and io_uring](https://lore.kernel.org/linux-raid/ee22cbab-950f-cdb0-7ef0-5ea0fe67c628@kernel.dk/).
