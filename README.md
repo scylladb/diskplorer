@@ -49,6 +49,12 @@ Once done, copy the result file (`test.json`) to your workstation and view the c
 
 ![i3.2xlarge chart](latency-matrix-results/i3.2xlarge.png)
 
+## GCP n2-standard-16, 8 local SSDs in RAID 0
+
+These results are using aio instead of io_uring due to [bad interaction between md and io_uring](https://lore.kernel.org/linux-raid/ee22cbab-950f-cdb0-7ef0-5ea0fe67c628@kernel.dk/).
+
+![n2-standard-16 with 8 local SSDs](latency-matrix-results/gcp-n2-16-8local.png)
+
 # Obsolete diskplorer variant
 
 *Diskplorer* is a small wrapper around <code>[fio](https://github.com/axboe/fio)</code>
