@@ -6,7 +6,7 @@ startdelay=1s
 filename=/dev/md0
 direct=1
 group_reporting
-ioengine=io_uring
+ioengine=aio
 size=0
 random_generator=tausworthe64
 thread
