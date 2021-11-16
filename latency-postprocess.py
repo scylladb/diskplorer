@@ -69,7 +69,7 @@ for name_mat, ax in zip(mats, axs):
     ax.set_xlabel('w_bw')
     ax.set_ylabel('r_iops')
     c = ax.pcolor(w_bw, r_iops, mat, shading='auto', cmap='cool',
-                  norm=matplotlib.colors.Normalize(vmin=0, vmax=5, clip=True))
+                  norm=matplotlib.colors.LogNorm(vmin=0.1, vmax=5, clip=True))
     fig.colorbar(c, ax=ax)
 
 
