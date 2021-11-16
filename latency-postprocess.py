@@ -7,6 +7,7 @@ import collections
 import argparse
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 import itertools
 
 parser = argparse.ArgumentParser(description='Post-process latency matrix results')
@@ -67,7 +68,9 @@ for name_mat, ax in zip(mats, axs):
     name, mat = name_mat
     ax.set_title(f'{name} latency')
     ax.set_xlabel('w_bw')
+    ax.xaxis.set_major_formatter(matplotlib.ticker.EngFormatter(unit='B/s'))
     ax.set_ylabel('r_iops')
+    ax.yaxis.set_major_formatter(matplotlib.ticker.EngFormatter(unit='op/s'))
     c = ax.pcolor(w_bw, r_iops, mat, shading='auto', cmap='cool',
                   norm=matplotlib.colors.LogNorm(vmin=0.1, vmax=5, clip=True))
     colorbar = fig.colorbar(c, ax=ax)
