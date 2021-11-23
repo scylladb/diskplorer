@@ -5,6 +5,9 @@ import argparse
 import math
 import textwrap
 import multiprocessing
+import subprocess
+import tempfile
+import json
 
 parser = argparse.ArgumentParser(description='Measure disk read latency vs. write bandwidth')
 parser.add_argument('--prefill', action='store_true',
@@ -31,6 +34,10 @@ parser.add_argument('--cpus', type=int, default=multiprocessing.cpu_count(),
                     help='Number of processors to use (default=all)')
 parser.add_argument('device',
                     help='device to test (e.g. /dev/nmve0n1). Caution: destructive')
+parser.add_argument('--fio-job-directory', type=str,
+                    help='Directory to place fio job files (default: files will not be kept)')
+parser.add_argument('--result-file', type=str, required=True,
+                    help='Results, in fio json+ format')
 
 args = parser.parse_args()
 
@@ -113,5 +120,21 @@ def generate_job_file(file):
                     rate_iops={this_cpu_read_iops}
                     '''))
 
-generate_job_file(file=sys.stdout)
+if args.fio_job_directory:
+    job_file_name = f'{args.fio_job_directory}/0000.fio'
+    job_file = open(job_file_name, 'w')
+else:
+    job_file = tempfile.NamedTemporaryFile(mode='w')
+    job_file_name = job_file.name
 
+generate_job_file(file=job_file)
+job_file.flush()
+
+def run_job(job_file_name):
+    tmp_json = tempfile.NamedTemporaryFile()
+    subprocess.check_call(['fio', '--output-format=json+', '--output', tmp_json.name, job_file_name])
+    return json.load(open(tmp_json.name))
+
+results = run_job(job_file_name)
+
+json.dump(results, open(args.result_file, 'w'))

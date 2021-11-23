@@ -20,15 +20,13 @@ or
 
 Obtain the maximum write bandwith and maximum read IOPS from the device data sheet.
 
-Generate a fio test file (substitute N1, N2, and /dev/name with your device parameters):
+Run diskplorer (substitute N1, N2, and /dev/name with your device parameters):
 
-    ./read-vs-write-latency.py --max-read-iops N1 --max-write-iops N2 /dev/name > test.fio
+    sudo ./read-vs-write-latency.py --max-read-iops N1 --max-write-iops N2 /dev/name --result-file your-results.json
 
-It is recommended to save the fio test file for later reference.
+It is recommended to save the fio test file for later reference (`--fio-job-directory')
 
-Run the fio test with:
-
-    fio --output-format json+ --output test.json test.fio
+`sudo` is required due to direct disk access.
 
 This will run for several hours. Some smoke may be emitted from the disk.
 
