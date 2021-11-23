@@ -45,6 +45,15 @@ Once done, copy the result file (`test.json`) to your workstation and view the c
 
 ![i3en.3xlarge chart](latency-matrix-results/i3en.3xlarge.png)
 
+With 4k blocksize, showing reduction in IOPS due to increased bandwidth demand:
+
+![i3en.3xlarge chart (4k bs)](latency-matrix-results/i3en.3xlarge.bs4k.png)
+
+With 16k blocksize, showing further reduction in IOPS due to increased bandwidth demand:
+
+![i3en.3xlarge chart (16k bs)](latency-matrix-results/i3en.3xlarge.bs16k.png)
+
+
 ## i3.2xlarge
 
 ![i3.2xlarge chart](latency-matrix-results/i3.2xlarge.png)
