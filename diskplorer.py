@@ -86,6 +86,7 @@ def generate_job_file(files):
             ioengine={ioengine}
             size={args.size_limit}
             random_generator=tausworthe64
+            randrepeat=0
             thread
 
         '''))
