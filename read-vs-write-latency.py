@@ -7,6 +7,10 @@ import textwrap
 import multiprocessing
 
 parser = argparse.ArgumentParser(description='Measure disk read latency vs. write bandwidth')
+parser.add_argument('--prefill', action='store_true',
+                    help='Prefill entire disk, defeats incorrect results due to discard (default)')
+parser.add_argument('--no-prefill', action='store_false', dest='prefill',
+                    help='Skips prefill')
 parser.add_argument('--max-write-bandwidth', type=float, required=True,
                     help='Maximum write bandwidth to test (in B/s)')
 parser.add_argument('--max-read-iops', type=float, required=True,
@@ -50,15 +54,18 @@ def generate_job_file(file):
         size={args.size_limit}
         random_generator=tausworthe64
         thread
-        
-        [prepare]
-        readwrite=write
-        time_based=0
-        blocksize=2MB
-        iodepth=4
-        runtime=0
 
         '''))
+    if args.prefill is None or args.prefill:
+        out(textwrap.dedent(f'''\
+            [prepare]
+            readwrite=write
+            time_based=0
+            blocksize=2MB
+            iodepth=4
+            runtime=0
+
+            '''))
     group_introducer=textwrap.dedent('''\
         stonewall
         new_group
