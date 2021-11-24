@@ -22,7 +22,7 @@ Obtain the maximum write bandwith and maximum read IOPS from the device data she
 
 Run diskplorer (substitute N1, N2, and /dev/name with your device parameters):
 
-    sudo ./read-vs-write-latency.py --max-read-iops N1 --max-write-iops N2 /dev/name --result-file your-results.json
+    sudo ./diskplorer.py --max-read-iops N1 --max-write-iops N2 /dev/name --result-file your-results.json
 
 It is recommended to save the fio test file for later reference (`--fio-job-directory')
 
