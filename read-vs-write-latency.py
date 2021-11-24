@@ -19,6 +19,8 @@ parser.add_argument('--write-test-steps', type=int, default=20,
                     help='Number of subdivisions from 0 to max-write-bandwidth to test')
 parser.add_argument('--read-test-steps', type=int, default=20,
                     help='Number of subdivisions from 0 to max-read-iops to test')
+parser.add_argument('--test-step-time-seconds', type=int, default=30,
+                    help='Time to run each step')
 parser.add_argument('--read-concurrency', type=int, default=1000)
 parser.add_argument('--read-buffer-size', type=int, default=512)
 parser.add_argument('--write-concurrency', type=int, default=4)
@@ -44,7 +46,7 @@ def generate_job_file(file):
     out(textwrap.dedent(f'''\
         [global]
         
-        runtime=30s
+        runtime={args.test_step_time_seconds}s
         time_based=1
         startdelay=1s
         filename={args.device}
