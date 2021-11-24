@@ -56,6 +56,8 @@ mats = [
     ('p95', p95),
 ]
 
+min_latency = np.amin(p50)
+
 matplotlib.rcParams.update({
     'font.size': 9,
     'figure.figsize': (12, 8),
@@ -72,7 +74,9 @@ for name_mat, ax in zip(mats, axs):
     ax.set_ylabel('r_iops')
     ax.yaxis.set_major_formatter(matplotlib.ticker.EngFormatter(unit='op/s'))
     c = ax.pcolor(w_bw, r_iops, mat, shading='auto', cmap='cool',
-                  norm=matplotlib.colors.LogNorm(vmin=0.1, vmax=5, clip=True))
+                  norm=matplotlib.colors.LogNorm(vmin=min_latency, 
+                                                 vmax=min_latency*50,
+                                                 clip=True))
     colorbar = fig.colorbar(c, ax=ax)
     colorbar.set_label('latency (ms)')
 
