@@ -80,13 +80,13 @@ def generate_job_file(files):
     file = next(files)
     def out(*args, **kwargs):
         print(*args, **kwargs, file=file)
+    delay = None
     def global_section():
         out(textwrap.dedent(f'''\
             [global]
         
             runtime={args.test_step_time_seconds}s
             time_based=1
-            startdelay=1s
             filename={args.device}
             direct=1
             group_reporting
@@ -109,6 +109,7 @@ def generate_job_file(files):
             runtime=0
 
             '''))
+        delay = 15
         yield file
     group_introducer=textwrap.dedent('''\
         stonewall
@@ -127,6 +128,8 @@ def generate_job_file(files):
             job_names = generate_job_names(f'job(r_idx={read_iops_step},w_idx={write_bw_step},write_bw={write_bw},r_iops={read_iops})')
             read_iops = max(read_iops, 1)   # no point in a write-only test
             nr_cpus = args.cpus
+            startdelay = f'startdelay={delay}s' if delay else ''
+            delay = None
             if write_bw > 0:
                 out(textwrap.dedent(f'''\
                     [{next(job_names)}]
