@@ -47,25 +47,29 @@ def generate_job_names(group_name):
         yield group_name + (f'.{idx}' if idx > 0 else '')
         idx += 1
 
-def generate_job_file(file):
+def generate_job_file(files):
+    file = next(files)
     def out(*args, **kwargs):
         print(*args, **kwargs, file=file)
-    out(textwrap.dedent(f'''\
-        [global]
+    def global_section():
+        out(textwrap.dedent(f'''\
+            [global]
         
-        runtime={args.test_step_time_seconds}s
-        time_based=1
-        startdelay=1s
-        filename={args.device}
-        direct=1
-        group_reporting
-        ioengine=io_uring
-        size={args.size_limit}
-        random_generator=tausworthe64
-        thread
+            runtime={args.test_step_time_seconds}s
+            time_based=1
+            startdelay=1s
+            filename={args.device}
+            direct=1
+            group_reporting
+            ioengine=io_uring
+            size={args.size_limit}
+            random_generator=tausworthe64
+            thread
 
         '''))
     if args.prefill is None or args.prefill:
+        file = next(files)
+        global_section()
         out(textwrap.dedent(f'''\
             [prepare]
             readwrite=write
@@ -75,6 +79,7 @@ def generate_job_file(file):
             runtime=0
 
             '''))
+        yield file
     group_introducer=textwrap.dedent('''\
         stonewall
         new_group
@@ -84,6 +89,9 @@ def generate_job_file(file):
         write_fraction = write_bw_step / args.write_test_steps
         write_bw = int(write_fraction * args.max_write_bandwidth)
         for read_iops_step in range(args.read_test_steps + 1):
+            file = next(files)
+            global_section()
+
             read_fraction = read_iops_step / args.read_test_steps
             read_iops = int(math.ceil(read_fraction * args.max_read_iops))
             job_names = generate_job_names(f'job(r_idx={read_iops_step},w_idx={write_bw_step},write_bw={write_bw},r_iops={read_iops})')
@@ -119,22 +127,28 @@ def generate_job_file(file):
                     iodepth={args.read_concurrency}
                     rate_iops={this_cpu_read_iops}
                     '''))
+            yield file
 
-if args.fio_job_directory:
-    job_file_name = f'{args.fio_job_directory}/0000.fio'
-    job_file = open(job_file_name, 'w')
-else:
-    job_file = tempfile.NamedTemporaryFile(mode='w')
-    job_file_name = job_file.name
+def job_files():
+    counter = 0
+    while True:
+        if args.fio_job_directory:
+            job_file_name = f'{args.fio_job_directory}/{counter:04}.fio'
+            counter += 1
+            yield open(job_file_name, 'w')
+        else:
+            yield tempfile.NamedTemporaryFile(mode='w')
 
-generate_job_file(file=job_file)
-job_file.flush()
+results = None
 
-def run_job(job_file_name):
+for job_file in generate_job_file(files=job_files()):
+    job_file.flush()
     tmp_json = tempfile.NamedTemporaryFile()
-    subprocess.check_call(['fio', '--output-format=json+', '--output', tmp_json.name, job_file_name])
-    return json.load(open(tmp_json.name))
-
-results = run_job(job_file_name)
+    subprocess.check_call(['fio', '--output-format=json+', '--output', tmp_json.name, job_file.name])
+    this_job_results = json.load(open(tmp_json.name))
+    if results is None:
+        results = this_job_results
+    else:
+        results['jobs'].extend(this_job_results['jobs'])
 
 json.dump(results, open(args.result_file, 'w'))
