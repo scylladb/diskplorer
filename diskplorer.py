@@ -8,6 +8,8 @@ import multiprocessing
 import subprocess
 import tempfile
 import json
+import os
+import stat
 
 parser = argparse.ArgumentParser(description='Measure disk read latency vs. write bandwidth')
 parser.add_argument('--prefill', action='store_true',
@@ -47,6 +49,26 @@ def generate_job_names(group_name):
         yield group_name + (f'.{idx}' if idx > 0 else '')
         idx += 1
 
+ioengine = 'io_uring'
+dev_stat = os.stat(args.device)
+dev_minor = None
+dev_major = None
+dev_path = None
+if stat.S_ISBLK(dev_stat.st_mode):
+    dev_major = os.major(dev_stat.st_rdev)
+    dev_minor = os.minor(dev_stat.st_rdev)
+    dev_path = f'/sys/dev/block/{dev_major}:{dev_minor}'
+else:
+    dev_major = None
+    dev_minor = None
+    dev_path = None
+
+if dev_major == 9:
+    # 'md' doesn't support io_uring well yet
+    ioengine = 'libaio'
+
+print(dev_major, dev_minor, dev_path, ioengine)
+
 def generate_job_file(files):
     file = next(files)
     def out(*args, **kwargs):
@@ -61,7 +83,7 @@ def generate_job_file(files):
             filename={args.device}
             direct=1
             group_reporting
-            ioengine=io_uring
+            ioengine={ioengine}
             size={args.size_limit}
             random_generator=tausworthe64
             thread
