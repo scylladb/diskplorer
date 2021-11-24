@@ -27,7 +27,7 @@ parser.add_argument('--read-test-steps', type=int, default=20,
 parser.add_argument('--test-step-time-seconds', type=int, default=30,
                     help='Time to run each step')
 parser.add_argument('--read-concurrency', type=int, default=1000)
-parser.add_argument('--read-buffer-size', type=int, default=512)
+parser.add_argument('--read-buffer-size', type=int, default=None)
 parser.add_argument('--write-concurrency', type=int, default=4)
 parser.add_argument('--write-buffer-size', type=int, default=128*1024)
 parser.add_argument('--size-limit', type=str, default="0",
@@ -58,10 +58,17 @@ if stat.S_ISBLK(dev_stat.st_mode):
     dev_major = os.major(dev_stat.st_rdev)
     dev_minor = os.minor(dev_stat.st_rdev)
     dev_path = f'/sys/dev/block/{dev_major}:{dev_minor}'
+    try:
+        partition = int(open(f'{dev_path}/partition').read())
+        dev_path = f'/sys/dev/block/{dev_major}:{dev_minor-partition}'
+    except:
+        pass
+    args.read_buffer_size = args.read_buffer_size or int(open(f'{dev_path}/queue/logical_block_size').read())
 else:
     dev_major = None
     dev_minor = None
     dev_path = None
+    args.read_buffer_size = args.read_buffer_size or 512
 
 if dev_major == 9:
     # 'md' doesn't support io_uring well yet
