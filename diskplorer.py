@@ -77,7 +77,7 @@ if dev_major == 9:
 print(dev_major, dev_minor, dev_path, ioengine)
 
 def generate_job_file(files):
-    file = next(files)
+    file = None
     def out(*args, **kwargs):
         print(*args, **kwargs, file=file)
     delay = None
