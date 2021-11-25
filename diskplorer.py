@@ -76,7 +76,23 @@ if dev_major == 9:
 
 print(dev_major, dev_minor, dev_path, ioengine)
 
-def generate_job_file(files):
+def run_jobs():
+    def job_files():
+        counter = 0
+        while True:
+            if args.fio_job_directory:
+                job_file_name = f'{args.fio_job_directory}/{counter:04}.fio'
+                counter += 1
+                yield open(job_file_name, 'w')
+            else:
+                yield tempfile.NamedTemporaryFile(mode='w')
+    files = job_files()
+    def run(job_file):
+        job_file.flush()
+        tmp_json = tempfile.NamedTemporaryFile()
+        subprocess.check_call(['fio', '--output-format=json+', '--output', tmp_json.name, job_file.name])
+        this_job_results = json.load(open(tmp_json.name))
+        return this_job_results
     file = None
     def out(*args, **kwargs):
         print(*args, **kwargs, file=file)
@@ -110,7 +126,8 @@ def generate_job_file(files):
 
             '''))
         delay = 15
-        yield file
+        run(file)
+        
     group_introducer=textwrap.dedent('''\
         stonewall
         new_group
@@ -160,25 +177,13 @@ def generate_job_file(files):
                     iodepth={args.read_concurrency}
                     rate_iops={this_cpu_read_iops}
                     '''))
-            yield file
-
-def job_files():
-    counter = 0
-    while True:
-        if args.fio_job_directory:
-            job_file_name = f'{args.fio_job_directory}/{counter:04}.fio'
-            counter += 1
-            yield open(job_file_name, 'w')
-        else:
-            yield tempfile.NamedTemporaryFile(mode='w')
+            yield run(file)
 
 results = None
 
-for job_file in generate_job_file(files=job_files()):
-    job_file.flush()
-    tmp_json = tempfile.NamedTemporaryFile()
-    subprocess.check_call(['fio', '--output-format=json+', '--output', tmp_json.name, job_file.name])
-    this_job_results = json.load(open(tmp_json.name))
+for this_job_results in run_jobs():
+    if this_job_results is None:
+        continue
     if results is None:
         results = this_job_results
     else:
