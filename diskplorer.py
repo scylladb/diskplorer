@@ -74,8 +74,6 @@ if dev_major == 9:
     # 'md' doesn't support io_uring well yet
     ioengine = 'libaio'
 
-print(dev_major, dev_minor, dev_path, ioengine)
-
 def run_jobs():
     def job_files():
         counter = 0
