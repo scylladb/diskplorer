@@ -56,6 +56,10 @@ With 16k blocksize, showing further reduction in IOPS due to increased bandwidth
 
 ![i3.2xlarge chart](latency-matrix-results/i3.2xlarge.png)
 
+## im4gn.4xlarge
+
+![im4gn.4xlarge chart](latency-matrix-results/im4gn.4xlarge.png)
+
 ## AWS EC2 r5b.2xlarge, EBS GP3 (1000 GB, 1000 MB/s, 16000 IOPS)
 
 ![EBS GP3 1000 MB/s, 16000 IOPS](latency-matrix-results/r2b.2xlarge-ebs-gp3-1000g-w1000-r16000.png)
