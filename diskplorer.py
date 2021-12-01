@@ -17,6 +17,7 @@ parser.add_argument('--prefill', action='store_true',
                     help='Prefill entire disk, defeats incorrect results due to discard (default)')
 parser.add_argument('--no-prefill', action='store_false', dest='prefill',
                     help='Skips prefill')
+parser.set_defaults(prefill=True)
 parser.add_argument('--max-write-bandwidth', type=float,
                     help='Maximum write bandwidth to test (in B/s) (default=auto-discover)')
 parser.add_argument('--max-read-iops', type=float,
@@ -120,7 +121,7 @@ def run_jobs():
             thread
 
         '''))
-    if args.prefill is None or args.prefill:
+    if args.prefill:
         file = next(files)
         global_section()
         out(textwrap.dedent(f'''\
