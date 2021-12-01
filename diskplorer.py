@@ -111,6 +111,7 @@ def run_jobs():
         
             runtime={args.test_step_time_seconds}s
             time_based=1
+            ramp_time=5
             filename={args.device}
             direct=1
             group_reporting
