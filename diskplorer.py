@@ -75,6 +75,15 @@ if dev_major == 9:
     # 'md' doesn't support io_uring well yet
     ioengine = 'libaio'
 
+# split `count` things among `among` users. Tries to be as
+# fair as possible. Returns an iterator.
+def split_among(count, among):
+    while count > 0:
+        this_count = int(math.ceil(count / among))
+        yield this_count
+        count -= this_count
+        among -= 1
+    
 def run_jobs():
     def job_files():
         counter = 0
@@ -194,10 +203,7 @@ def run_jobs():
                 read_group_introducer = ''
             else:
                 read_group_introducer = group_introducer
-            while read_iops > 0:
-                this_cpu_read_iops = int(math.ceil(read_iops / nr_cpus))
-                read_iops -= this_cpu_read_iops
-                nr_cpus -= 1
+            for this_cpu_read_iops in split_among(read_iops, nr_cpus):
                 out(textwrap.dedent(f'''\
                     [{next(job_names)}]
                     '''))
