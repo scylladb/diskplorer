@@ -156,12 +156,18 @@ def run_jobs():
         while concurrency < 1024:
             file = next(files)
             global_section()
-            out(textwrap.dedent(f'''\
-                [max-read-iops-{concurrency}]
-                readwrite=randread
-                blocksize={args.read_buffer_size}
-                iodepth={concurrency}
-                '''))
+            nr = 0
+            group_introducer = 'new_group'
+            for this_cpu_concurrency in split_among(concurrency, args.cpus):
+                out(textwrap.dedent(f'''\
+                    [max-read-iops-{concurrency}-{nr}]
+                    readwrite=randread
+                    blocksize={args.read_buffer_size}
+                    iodepth={this_cpu_concurrency}
+                    {group_introducer}
+                    '''))
+                group_introducer = ''
+                nr += 1
             read_bw_json = run(file)
             job = read_bw_json['jobs'][0]
             iops = job['read']['iops']
