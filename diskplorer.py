@@ -17,10 +17,10 @@ parser.add_argument('--prefill', action='store_true',
                     help='Prefill entire disk, defeats incorrect results due to discard (default)')
 parser.add_argument('--no-prefill', action='store_false', dest='prefill',
                     help='Skips prefill')
-parser.add_argument('--max-write-bandwidth', type=float, required=True,
-                    help='Maximum write bandwidth to test (in B/s)')
-parser.add_argument('--max-read-iops', type=float, required=True,
-                    help='Maximum read IOPS to test (in ops/s)')
+parser.add_argument('--max-write-bandwidth', type=float,
+                    help='Maximum write bandwidth to test (in B/s) (default=auto-discover)')
+parser.add_argument('--max-read-iops', type=float,
+                    help='Maximum read IOPS to test (in ops/s) (default=auto-discover)')
 parser.add_argument('--write-test-steps', type=int, default=20,
                     help='Number of subdivisions from 0 to max-write-bandwidth to test')
 parser.add_argument('--read-test-steps', type=int, default=20,
@@ -125,6 +125,42 @@ def run_jobs():
             '''))
         time.sleep(15)
         run(file)
+
+    if args.max_write_bandwidth is None:
+        file = next(files)
+        global_section()
+        out(textwrap.dedent(f'''\
+            [max-write-bw]
+            readwrite=write
+            blocksize={args.write_buffer_size}
+            iodepth=64
+            '''))
+        write_bw_json = run(file)
+        job = write_bw_json['jobs'][0]
+        args.max_write_bandwidth = job['write']['bw_bytes']
+        time.sleep(10)
+
+    if args.max_read_iops is None:
+        # we don't know what concurrency yields the best result, so measure it
+        concurrency = 15
+        max_iops = 0
+        while concurrency < 1024:
+            file = next(files)
+            global_section()
+            out(textwrap.dedent(f'''\
+                [max-read-iops-{concurrency}]
+                readwrite=randread
+                blocksize={args.read_buffer_size}
+                iodepth={concurrency}
+                '''))
+            read_bw_json = run(file)
+            job = read_bw_json['jobs'][0]
+            iops = job['read']['iops']
+            if iops < max_iops:
+                break
+            max_iops = iops
+            concurrency = 2*concurrency + 1
+        args.max_read_iops = max_iops
         
     group_introducer=textwrap.dedent('''\
         stonewall
