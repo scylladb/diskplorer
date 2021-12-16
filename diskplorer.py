@@ -45,6 +45,9 @@ parser.add_argument('--result-file', type=str, required=True,
 
 args = parser.parse_args()
 
+if args.fio_job_directory and not os.path.exists(args.fio_job_directory):
+    os.makedirs(args.fio_job_directory)
+
 def generate_job_names(group_name):
     idx = 0
     while True:
