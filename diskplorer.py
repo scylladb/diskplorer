@@ -30,7 +30,7 @@ parser.add_argument('--test-step-time-seconds', type=int, default=30,
                     help='Time to run each step')
 parser.add_argument('--read-concurrency', type=int, default=1000)
 parser.add_argument('--read-buffer-size', type=int, default=None)
-parser.add_argument('--write-concurrency', type=int, default=4)
+parser.add_argument('--write-concurrency', type=int, default=64)
 parser.add_argument('--write-buffer-size', type=int, default=128*1024)
 parser.add_argument('--size-limit', type=str, default="0",
                     help='Limit I/O range on device (required for files)')
