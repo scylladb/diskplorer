@@ -10,15 +10,22 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 import itertools
 
-parser = argparse.ArgumentParser(description='Post-process latency matrix results')
+parser = argparse.ArgumentParser(description='Post-process latency matrix results',
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
+                                 )
 parser.add_argument('file',
                     help='JSON result file from fio')
 parser.add_argument('--output',
                     help='Output file (.svg/.png) (default=interactive)')
+parser.add_argument('--write-throughput-allowed-error', type=float, default=0.03,
+                    help='Allowed error in write throughput below which the results are not admissible')
+parser.add_argument('--read-iops-allowed-error', type=float, default=0.03,
+                    help='Allowed error in read throughput below which the results are not admissible')
 
 args = parser.parse_args()
 
-cell = collections.namedtuple('cell', ['r_iops', 'w_bw', 'r_clat'])
+cell = collections.namedtuple('cell', ['r_iops', 'w_bw', 'r_clat',
+                                       'actual_w_bw', 'actual_r_iops'])
 
 for result_file in [args.file]:
     jobs = json.load(open(result_file))['jobs']
@@ -31,21 +38,28 @@ for result_file in [args.file]:
             continue
         m = re.match(r'job\(r_idx=(\d+),w_idx=(\d+),write_bw=(\d+),r_iops=(\d+)', name)
         r_idx, w_idx, w_bw, r_iops = [int(x) for x in m.groups()]
-        results_dict[(r_idx, w_idx)] = cell(r_iops=r_iops, w_bw=w_bw, r_clat=j['read']['clat_ns'])
+        results_dict[(r_idx, w_idx)] = cell(r_iops=r_iops, w_bw=w_bw,
+                                            r_clat=j['read']['clat_ns'],
+                                            actual_w_bw=int(j['write']['bw_bytes']),
+                                            actual_r_iops=int(j['read']['iops'])
+                                            )
 
 n_r = max([k[0] for k in results_dict.keys()]) + 1
 n_w = max([k[1] for k in results_dict.keys()]) + 1
 
 shape = [n_w, n_r]
 
-p50 = np.zeros(shape)
-p95 = np.zeros(shape)        
+p50 = np.ma.array(np.zeros(shape), mask=True)
+p95 = np.ma.array(np.zeros(shape), mask=True)
 r_iops = np.zeros(shape)
 w_bw = np.zeros(shape)
         
 for key, cell in results_dict.items():
     r_iops[key[1]][key[0]] = cell.r_iops
     w_bw[key[1]][key[0]] = cell.w_bw
+    if (cell.actual_w_bw < (1 - args.write_throughput_allowed_error) * cell.w_bw
+        or cell.actual_r_iops < (1 - args.read_iops_allowed_error) * cell.r_iops):
+        continue
     if 'percentile' in cell.r_clat:
         p50[key[1]][key[0]] = float(cell.r_clat['percentile']['50.000000']) * 1e-6
         p95[key[1]][key[0]] = float(cell.r_clat['percentile']['95.000000']) * 1e-6
