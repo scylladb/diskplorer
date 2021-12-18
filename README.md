@@ -41,7 +41,7 @@ Once done, copy the result file (`test.json`) to your workstation and view the c
 
 ## i3en.3xlarge
 
-![i3en.3xlarge chart](latency-matrix-results/i3en.3xlarge.png)
+![i3en.3xlarge chart](latency-matrix-results/i3en.3xlarge.svg)
 
 With 4k blocksize, showing reduction in IOPS due to increased bandwidth demand:
 
