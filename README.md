@@ -54,7 +54,7 @@ With 16k blocksize, showing further reduction in IOPS due to increased bandwidth
 
 ## i3.2xlarge
 
-![i3.2xlarge chart](latency-matrix-results/i3.2xlarge.png)
+![i3.2xlarge chart](latency-matrix-results/i3.2xlarge.svg)
 
 ## im4gn.4xlarge
 
