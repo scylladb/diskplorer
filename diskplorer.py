@@ -80,10 +80,11 @@ if dev_major == 9:
     ioengine = 'libaio'
 
 # split `count` things among `among` users. Tries to be as
-# fair as possible. Returns an iterator.
-def split_among(count, among):
+# fair as possible. Returns an iterator. Doesn't bother
+# splitting below 'dont_bother_below'
+def split_among(count, among, dont_bother_below=1):
     while count > 0:
-        this_count = int(math.ceil(count / among))
+        this_count = max(int(math.ceil(count / among)), min(dont_bother_below, count))
         yield this_count
         count -= this_count
         among -= 1
@@ -197,7 +198,7 @@ def run_jobs():
             read_fraction = read_iops_step / args.read_test_steps
             read_iops = int(math.ceil(read_fraction * args.max_read_iops))
             job_names = generate_job_names(f'job(r_idx={read_iops_step},w_idx={write_bw_step},write_bw={write_bw},r_iops={read_iops})')
-            read_iops = max(read_iops, 1)   # no point in a write-only test
+            read_iops = max(read_iops, 10)   # no point in a write-only test
             nr_cpus = args.cpus
             if write_bw > 0:
                 out(textwrap.dedent(f'''\
@@ -214,7 +215,7 @@ def run_jobs():
                 read_group_introducer = ''
             else:
                 read_group_introducer = group_introducer
-            for this_cpu_read_iops in split_among(read_iops, nr_cpus):
+            for this_cpu_read_iops in split_among(read_iops, nr_cpus, 10):
                 out(textwrap.dedent(f'''\
                     [{next(job_names)}]
                     '''))
