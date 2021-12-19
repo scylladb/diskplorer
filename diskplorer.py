@@ -226,6 +226,7 @@ def run_jobs():
                     blocksize={args.read_buffer_size}
                     iodepth={args.read_concurrency}
                     rate_iops={this_cpu_read_iops}
+                    rate_process=poisson
                     '''))
             yield run(file)
 
