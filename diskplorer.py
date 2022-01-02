@@ -75,6 +75,8 @@ else:
     dev_path = None
     args.read_buffer_size = args.read_buffer_size or 512
 
+args.write_concurrency = min(args.write_concurrency, int(open(f'{dev_path}/queue/nr_requests').read()))
+
 if dev_major == 9:
     # 'md' doesn't support io_uring well yet
     ioengine = 'libaio'
@@ -151,7 +153,7 @@ def run_jobs():
             [max-write-bw]
             readwrite=write
             blocksize={args.write_buffer_size}
-            iodepth=64
+            iodepth={args.write_concurrency}
             '''))
         write_bw_json = run(file)
         job = write_bw_json['jobs'][0]
