@@ -17,7 +17,7 @@ parser.add_argument('--prefill', action='store_true',
                     help='Prefill entire disk, defeats incorrect results due to discard (default)')
 parser.add_argument('--no-prefill', action='store_false', dest='prefill',
                     help='Skips prefill')
-parser.set_defaults(prefill=True)
+parser.set_defaults(prefill=None)
 parser.add_argument('--max-write-bandwidth', type=float,
                     help='Maximum write bandwidth to test (in B/s) (default=auto-discover)')
 parser.add_argument('--max-read-iops', type=float,
@@ -78,6 +78,9 @@ else:
 if dev_major == 9:
     # 'md' doesn't support io_uring well yet
     ioengine = 'libaio'
+
+if args.prefill is None:
+    args.prefill = not bool(open(f'{dev_path}/queue/rotational').read())
 
 # split `count` things among `among` users. Tries to be as
 # fair as possible. Returns an iterator. Doesn't bother
