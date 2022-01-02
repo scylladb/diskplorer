@@ -70,6 +70,13 @@ These results are using aio instead of io_uring due to [bad interaction between 
 
 ![n2-standard-16 with 8 local SSDs](latency-matrix-results/gcp-n2-16-8local.png)
 
+## Toshiba DT01ACA200 hard disk drive
+
+Results for a rotating hard disk drive. Note the throughput and IOPS were
+allows to miss by a 15% margin rather than the normal 3% margin.
+
+![Toshiba DT01ACA200 hard disk drive](latency-matrix-results/hdd-toshiba-DT01ACA200.svg)
+
 # Obsolete diskplorer variant
 
 Please see the [old README page](OLD.md)
