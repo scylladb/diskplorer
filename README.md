@@ -20,10 +20,10 @@ or
 
 Obtain the maximum write bandwith and maximum read IOPS from the device data sheet.
 
-Run diskplorer (substitute N1, N2, and /dev/name with your device parameters):
+Run diskplorer (substitute `/dev/name` with your device file):
 
 ```console
-sudo ./diskplorer.py --max-read-iops N1 --max-write-iops N2 /dev/name --result-file your-results.json
+sudo ./diskplorer.py /dev/name --result-file your-results.json
 ```
 
 It is recommended to save the fio test file for later reference (`--fio-job-directory`)
