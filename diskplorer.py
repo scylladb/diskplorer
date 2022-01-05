@@ -82,7 +82,7 @@ if dev_major == 9:
     ioengine = 'libaio'
 
 if args.prefill is None:
-    args.prefill = not bool(open(f'{dev_path}/queue/rotational').read())
+    args.prefill = not bool(int(open(f'{dev_path}/queue/rotational').read()))
 
 # split `count` things among `among` users. Tries to be as
 # fair as possible. Returns an iterator. Doesn't bother
