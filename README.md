@@ -79,7 +79,3 @@ allows to miss by a 15% margin rather than the normal 3% margin.
 
 ![Toshiba DT01ACA200 hard disk drive](latency-matrix-results/hdd-toshiba-DT01ACA200.svg)
 
-# Obsolete diskplorer variant
-
-Please see the [old README page](OLD.md)
-
