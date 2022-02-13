@@ -72,6 +72,13 @@ These results are using aio instead of io_uring due to [bad interaction between 
 
 ![n2-standard-16 with 8 local SSDs](latency-matrix-results/gcp-n2-16-8local.png)
 
+## GCP n2-standard-8, 2 TB SSD Persistent Disk
+
+Strangely the 95th percentile at low rates is worse than at high
+rates.
+
+![n2-standard-8 with 2TB SSD Persistent Disk](latency-matrix-results/gcp-pd-SSD-2TB.svg)
+
 ## Toshiba DT01ACA200 hard disk drive
 
 Results for a rotating hard disk drive. Note the throughput and IOPS were
