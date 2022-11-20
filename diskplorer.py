@@ -37,7 +37,9 @@ parser.add_argument('--size-limit', type=str, default="0",
 parser.add_argument('--cpus', type=int, default=multiprocessing.cpu_count(),
                     help='Number of processors to use (default=all)')
 parser.add_argument('device',
-                    help='device to test (e.g. /dev/nmve0n1). Caution: destructive')
+                    help='device to test (e.g. /dev/nmve0n1). Caution: may destructive if filename is not a proper dir/file')
+parser.add_argument('--filename',type=str, default='/tmp/testfile',
+                    help='fio stress this file , `filename` should in device, default is `/tmp/testfile`')
 parser.add_argument('--fio-job-directory', type=str,
                     help='Directory to place fio job files (default: files will not be kept)')
 parser.add_argument('--result-file', type=str, required=True,
@@ -121,7 +123,7 @@ def run_jobs():
             runtime={args.test_step_time_seconds}s
             time_based=1
             ramp_time=5
-            filename={args.device}
+            filename={args.filename}
             direct=1
             group_reporting
             ioengine={ioengine}
