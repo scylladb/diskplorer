@@ -21,6 +21,9 @@ parser.add_argument('--write-throughput-allowed-error', type=float, default=0.03
                     help='Allowed error in write throughput below which the results are not admissible')
 parser.add_argument('--read-iops-allowed-error', type=float, default=0.03,
                     help='Allowed error in read throughput below which the results are not admissible')
+parser.add_argument('--p99-and-p999', action='store_true',
+                    help='Plots P99 and P999 instead of P50 and P95')
+parser.set_defaults(p99_and_p999=False)
 
 args = parser.parse_args()
 
@@ -51,6 +54,9 @@ shape = [n_w, n_r]
 
 p50 = np.ma.array(np.zeros(shape), mask=True)
 p95 = np.ma.array(np.zeros(shape), mask=True)
+p99 = np.ma.array(np.zeros(shape), mask=True)
+p999 = np.ma.array(np.zeros(shape), mask=True)
+
 r_iops = np.zeros(shape)
 w_bw = np.zeros(shape)
         
@@ -63,12 +69,19 @@ for key, cell in results_dict.items():
     if 'percentile' in cell.r_clat:
         p50[key[1]][key[0]] = float(cell.r_clat['percentile']['50.000000']) * 1e-6
         p95[key[1]][key[0]] = float(cell.r_clat['percentile']['95.000000']) * 1e-6
+        p99[key[1]][key[0]] = float(cell.r_clat['percentile']['99.000000']) * 1e-6
+        p999[key[1]][key[0]] = float(cell.r_clat['percentile']['99.900000']) * 1e-6
 
-
-mats = [
-    ('p50', p50),
-    ('p95', p95),
-]
+if args.p99_and_p999:
+    mats = [
+        ('p99', p99),
+        ('p999', p999),
+    ]
+else:
+    mats = [
+        ('p50', p50),
+        ('p95', p95),
+    ]
 
 min_latency = np.amin(p50)
 
