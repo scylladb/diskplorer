@@ -37,7 +37,7 @@ for result_file in [args.file]:
 
     for j in jobs:
         name = j['jobname']
-        if name == 'prepare':
+        if name == 'prepare' or name.startswith('prepare_data_for_trim'):
             continue
         m = re.match(r'job\(r_idx=(\d+),w_idx=(\d+),write_bw=(\d+),r_iops=(\d+)', name)
         r_idx, w_idx, w_bw, r_iops = [int(x) for x in m.groups()]

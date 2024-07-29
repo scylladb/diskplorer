@@ -42,6 +42,14 @@ parser.add_argument('--fio-job-directory', type=str,
                     help='Directory to place fio job files (default: files will not be kept)')
 parser.add_argument('--result-file', type=str, required=True,
                     help='Results, in fio json+ format')
+parser.add_argument('--sequential-trim', action='store_true',
+                    help='Run sequential trim workload in addition to read/write ones to check its impact.')
+parser.add_argument('--trim-offset-time-seconds', type=int, default=10,
+                    help='Time amount after the written data is trimmed.')
+parser.add_argument('--min-trim-block-size', type=int, default=33554432,
+                    help='Minimum block size for a trim operation in bytes (32MB by default). Ignored if --force-trim-block-size is used.')
+parser.add_argument('--force-trim-block-size', type=int, default=-1,
+                    help='Forces block size for a trim operation (value in bytes).')
 
 args = parser.parse_args()
 
@@ -93,6 +101,12 @@ def split_among(count, among, dont_bother_below=1):
         yield this_count
         count -= this_count
         among -= 1
+
+def align_up(number, alignment):
+    if number % alignment == 0:
+        return number
+    else:
+        return (number - (number % alignment)) + alignment
     
 def run_jobs():
     def job_files():
@@ -205,17 +219,82 @@ def run_jobs():
             job_names = generate_job_names(f'job(r_idx={read_iops_step},w_idx={write_bw_step},write_bw={write_bw},r_iops={read_iops})')
             read_iops = max(read_iops, 10)   # no point in a write-only test
             nr_cpus = args.cpus
+
+            read_offset_str = ''
+            write_offset_str = ''
+            case_runtime_seconds = args.test_step_time_seconds
+            trim_block_size = args.min_trim_block_size
+
             if write_bw > 0:
+                if args.sequential_trim:
+                    if args.force_trim_block_size != -1:
+                        trim_block_size = args.force_trim_block_size
+                    else:
+                        # the used bandwith of a trim workload is equal to the bandwidth of write operation
+                        # and by default we try to use block_size={write_bw*args.trim_offset_time_seconds/2}
+                        # however, because discards are big and rare we want to enforce a certain minimum size
+                        # of block for the trim operation
+                        bw_dependent_trim_block_size = align_up(int(write_bw*args.trim_offset_time_seconds/2), 4096)
+                        trim_block_size = max(args.min_trim_block_size, bw_dependent_trim_block_size)
+
+                    # because we cannot trim into the past we need to write data before the trim workload is run
+                    #  - the amount of prepared data is at least equal to trim block size
+                    #  - the pre-write operation finishes before read+write+trim is executed and its results
+                    #    are stored in a separate measurements group
+                    bw_written_data_size = align_up(write_bw*args.trim_offset_time_seconds, args.write_buffer_size)
+                    pre_written_data_size = max(bw_written_data_size, trim_block_size)
+                    out(textwrap.dedent(f'''\
+                        [prepare_data_for_trim(r_idx={read_iops_step},w_idx={write_bw_step},write_bw={write_bw},r_iops={read_iops})]
+                        '''))
+                    out(group_introducer)
+                    out(textwrap.dedent(f'''\
+                        readwrite=write
+                        time_based=0
+                        runtime=0
+                        size={pre_written_data_size}
+                        blocksize={args.write_buffer_size}
+                        iodepth={args.write_concurrency}
+                        rate={write_bw}
+                        '''))
+
+                    # also, we want to ensure that at least 4 discard requests are issued per round of measurements
+                    # therefore, the time amount for the workloads needs to be sufficiently large
+                    runtime_margin_seconds = 3
+                    bw_dependent_runtime_seconds = int((4*trim_block_size) / write_bw) + runtime_margin_seconds
+                    case_runtime_seconds = max(args.test_step_time_seconds, bw_dependent_runtime_seconds)
+
+                    # moreover, we need to set 'offset=' parameter in the ordinary read and write jobs
+                    #  - in the case of read we want to avoid touching discarded area
+                    #  - in the case of write we want to start writing data after the pre-written region
+                    read_offset_bs_margin = 2*trim_block_size
+                    read_offset_time_margin = write_bw*(case_runtime_seconds+args.trim_offset_time_seconds)
+                    read_offset = align_up(read_offset_time_margin+read_offset_bs_margin, args.read_buffer_size)
+                    read_offset_str = f'offset={read_offset}'
+                    write_offset_str = f'offset={pre_written_data_size}'
+
                 out(textwrap.dedent(f'''\
                     [{next(job_names)}]
                     '''))
                 out(group_introducer)
                 out(textwrap.dedent(f'''\
                     readwrite=write
+                    runtime={case_runtime_seconds}s
                     blocksize={args.write_buffer_size}
                     iodepth={args.write_concurrency}
                     rate={write_bw}
+                    {write_offset_str}
                     '''))
+
+                if args.sequential_trim:
+                    out(textwrap.dedent(f'''\
+                        [{next(job_names)}]
+                        readwrite=trim
+                        runtime={case_runtime_seconds}s
+                        blocksize={trim_block_size}
+                        iodepth={args.write_concurrency}
+                        rate={write_bw}
+                        '''))
+
                 nr_cpus -= 1
                 read_group_introducer = ''
             else:
@@ -228,10 +307,12 @@ def run_jobs():
                 read_group_introducer = ''
                 out(textwrap.dedent(f'''\
                     readwrite=randread
+                    runtime={case_runtime_seconds}s
                     blocksize={args.read_buffer_size}
                     iodepth={args.read_concurrency}
                     rate_iops={this_cpu_read_iops}
                     rate_process=poisson
+                    {read_offset_str}
                     '''))
             yield run(file)
 
