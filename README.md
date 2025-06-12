@@ -18,6 +18,10 @@ or
 
     apt-get install -y fio
 
+and
+
+    pip install -r requirements.txt
+
 Obtain the maximum write bandwith and maximum read IOPS from the device data sheet.
 
 Run diskplorer (substitute `/dev/name` with your device file):
