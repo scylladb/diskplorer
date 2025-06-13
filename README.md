@@ -58,6 +58,10 @@ With 16k blocksize, showing further reduction in IOPS due to increased bandwidth
 
 ![i3.2xlarge chart](latency-matrix-results/i3.2xlarge.svg)
 
+With additional sequential trim job that discarded 32MB blocks (trim bandwidth == write bandwidth).
+
+![i3.2xlarge chart trim 32MB](latency-matrix-results/i3_2xlarge_trim_block_size_32MB_offset_10s.png)
+
 ## im4gn.4xlarge
 
 ![im4gn.4xlarge chart](latency-matrix-results/im4gn.4xlarge.png)
