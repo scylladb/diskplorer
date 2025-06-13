@@ -8,7 +8,8 @@ Diskplorer runs in two steps: step 1 generates a json result file, and must be r
 
 # Running the test
 
-Caution: the test is destructive. Do not use on disks that have real data.
+| :warning: Caution: the test is destructive. Do not use on disks that have real data. |
+| --- |
 
 Install the dependencies with
 
